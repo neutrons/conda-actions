@@ -18,7 +18,7 @@ jobs:
 
       - name: Test
         id: test
-        uses: ../conda-cleanup
+        uses: glass-ships/conda-actions/conda-cleanup@main
         with:
           anaconda_token: unset_token
           organization: neutronimaging
@@ -50,7 +50,7 @@ jobs:
 
       - name: Test
         id: test
-        uses: ../conda-cleanup
+        uses: glass-ships/conda-actions/conda-cleanup@main
         with:
           anaconda_token: unset_token
           organization: neutronimaging

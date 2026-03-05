@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify conda package
-        uses: ../conda-verify
+        uses: glass-ships/conda-actions/conda-verify@main
         with:
           # local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify conda package
-        uses: ../conda-verify
+        uses: glass-ships/conda-actions/conda-verify@main
         with:
           # local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
