@@ -1,4 +1,4 @@
-name: Test conda-cleanup action
+name: Test pkg-remove action
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ jobs:
 
       - name: Test
         id: test
-        uses: neutrons/conda-actions/conda-cleanup@main
+        uses: neutrons/conda-actions/pkg-remove@main
         with:
           anaconda_token: unset_token
           organization: neutronimaging
@@ -50,7 +50,7 @@ jobs:
 
       - name: Test
         id: test
-        uses: neutrons/conda-actions/conda-cleanup@main
+        uses: neutrons/conda-actions/pkg-remove@main
         with:
           anaconda_token: unset_token
           organization: neutronimaging

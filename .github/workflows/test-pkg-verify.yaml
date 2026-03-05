@@ -1,4 +1,4 @@
-name: Test conda-verify action
+name: Test pkg-verify action
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   test:
-    name: Test conda-verify action
+    name: Test pkg-verify action
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Verify conda package
-        uses: neutrons/conda-actions/conda-verify@main
+        uses: neutrons/conda-actions/pkg-verify@main
         with:
           # local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
@@ -33,7 +33,7 @@ jobs:
             echo "${output}"
 
   test-with-module-name:
-    name: Test conda-verify action with module name
+    name: Test pkg-verify action with module name
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Verify conda package
-        uses: neutrons/conda-actions/conda-verify@main
+        uses: neutrons/conda-actions/pkg-verify@main
         with:
           # local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
