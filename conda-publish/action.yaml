@@ -1,0 +1,68 @@
+name: conda-publish
+description: Upload a pre-built conda package to Anaconda Cloud
+author: glass-ships
+branding:
+  icon: upload-cloud
+  color: green
+
+inputs:
+  anaconda-token:
+    description: Anaconda.org API token (store as a repository/org secret)
+    required: true
+  organization:
+    description: Anaconda.org organization or user name to publish under
+    required: true
+  package-path:
+    description: Path to the .conda file to upload.
+    required: true
+  label:
+    description: |
+      Anaconda channel label to publish to (e.g. main, dev, nightly, rc).
+      Defaults to "main".
+    required: false
+    default: "main"
+  force:
+    description: |
+      If true, overwrite an existing package file with the same name/version.
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    # Install pixi if not already available, then ensure anaconda-client is installed.
+    - name: Install anaconda-client via pixi
+      shell: bash
+      run: |
+        if ! command -v pixi &>/dev/null; then
+          curl -fsSL https://pixi.sh/install.sh | bash
+          echo "${HOME}/.pixi/bin" >> "${GITHUB_PATH}"
+        fi
+        pixi global install anaconda-client
+
+    - name: Upload package to Anaconda Cloud
+      shell: bash
+      env:
+        ANACONDA_API_TOKEN: ${{ inputs.anaconda-token }}
+        ORGANIZATION: ${{ inputs.organization }}
+        PACKAGE_PATH: ${{ inputs.package-path }}
+        LABEL: ${{ inputs.label }}
+        FORCE: ${{ inputs.force }}
+      run: |
+        set -euo pipefail
+
+        force_flag=""
+        if [ "${FORCE}" = "true" ]; then
+          force_flag="--force"
+        fi
+
+        echo "Uploading ${pkg} to ${ORGANIZATION} with label '${LABEL}'"
+        anaconda \
+          --token "${ANACONDA_API_TOKEN}" \
+          upload \
+          --user "${ORGANIZATION}" \
+          --label "${LABEL}" \
+          ${force_flag} \
+          "${pkg}"
+
+        echo "Upload complete."
