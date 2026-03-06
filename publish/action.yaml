@@ -15,12 +15,18 @@ inputs:
   package-path:
     description: Path to the .conda file to upload.
     required: true
+  github-ref:
+    description: |
+      GitHub ref (branch, tag, or commit) to include in the package metadata.
+      Defaults to the current ref of the workflow run.
+    required: false
+    default: ${{ github.ref }}
   label:
     description: |
       Anaconda channel label to publish to (e.g. main, dev, nightly, rc).
       Defaults to "main".
     required: false
-    default: "main"
+    default: ""
   force:
     description: |
       If true, overwrite an existing package file with the same name/version.
@@ -49,10 +55,25 @@ runs:
         ANACONDA_API_TOKEN: ${{ inputs.anaconda-token }}
         ORGANIZATION: ${{ inputs.organization }}
         PACKAGE_PATH: ${{ inputs.package-path }}
+        REF: ${{ inputs.github-ref }}
         LABEL: ${{ inputs.label }}
         FORCE: ${{ inputs.force }}
       run: |
         set -euo pipefail
+
+        if [ "${LABEL}" = "" ]; then
+          echo "No label input provided. Determining label from GitHub ref '${REF}'..."
+          case "${REF}" in
+            refs/heads/next)  LABEL="dev" ;;
+            refs/tags/v*rc*)  LABEL="rc" ;;
+            refs/tags/v*)     LABEL="main" ;;
+            *)
+              echo "Could not determine label from ref '${REF}'. Please provide a label input or use a ref format like 'refs/heads/next' or 'refs/tags/vX.Y.Z[rcN]'."
+              exit 1
+              ;;
+          esac
+        fi
+        echo "Using label '${LABEL}' for upload."
 
         force_flag=""
         if [ "${FORCE}" = "true" ]; then
