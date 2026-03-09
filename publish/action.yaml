@@ -80,13 +80,13 @@ runs:
           force_flag="--force"
         fi
 
-        echo "Uploading ${pkg} to ${ORGANIZATION} with label '${LABEL}'"
+        echo "Uploading ${PACKAGE_PATH} to ${ORGANIZATION} with label '${LABEL}'"
         anaconda \
           --token "${ANACONDA_API_TOKEN}" \
           upload \
           --user "${ORGANIZATION}" \
           --label "${LABEL}" \
           ${force_flag} \
-          "${pkg}"
+          "${PACKAGE_PATH}"
 
         echo "Upload complete."
