@@ -87,6 +87,6 @@ runs:
           --user "${ORGANIZATION}" \
           --label "${LABEL}" \
           ${force_flag} \
-          "${PACKAGE_PATH}"
+          ${PACKAGE_PATH}
 
         echo "Upload complete."
