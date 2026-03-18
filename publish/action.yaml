@@ -42,17 +42,19 @@ runs:
       run: |
         if command -v anaconda &>/dev/null; then
             echo "'anaconda' command is available. Using it for upload."
-            export CMD="anaconda"
+            echo "CMD=anaconda" >> $GITHUB_OUTPUT
         elif pixi run anaconda --version &>/dev/null; then
             echo "anaconda command is available via pixi. Using 'pixi run anaconda' for upload."
-            export CMD="pixi run anaconda"
+            echo "CMD='pixi run anaconda'" >> $GITHUB_OUTPUT
         else
-            echo "anaconda command is not available via pixi. Checking for 'anaconda' command..."
-            if command -v anaconda &>/dev/null; then
-                echo "'anaconda' command found. Using it for upload."
-                export CMD="anaconda"
+            echo "Checking for 'pixi' command..."
+            if command -v pixi &>/dev/null; then
+                echo "'pixi' command is available but 'anaconda' is not found. Installing anaconda-client..."
+                pixi global install anaconda-client
+                echo "Using 'pixi run anaconda' for upload after installation."
+                echo "CMD='pixi run anaconda'" >> $GITHUB_OUTPUT
             else
-                echo "Neither 'anaconda' command nor 'pixi run anaconda' is available. Please ensure that anaconda-client is installed and available in PATH or via pixi."
+                echo "Neither 'anaconda' command nor 'pixi' is available. Please ensure that anaconda-client is installed and available in PATH or via pixi."
                 exit 1
             fi
         fi
