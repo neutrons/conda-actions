@@ -79,7 +79,6 @@ runs:
 
         # create and activate environment
         micromamba create -y -n test ${channels} ${PYTHON_VERSION} ${PKG_NAME}
-        micromamba activate test
 
         # for use by other things
         echo "install_dir=${CONDA_PREFIX}" >> "$GITHUB_OUTPUT"
@@ -93,6 +92,7 @@ runs:
       run: |
         echo "Verifying conda package"
 
+        micromamba activate test
         conda_version=$(micromamba list "${PKG_NAME}" | awk -v pkg="${PKG_NAME}" '$1 == pkg { print $2 }')
 
         if [ -n "${MODULE_NAME}" ]; then
