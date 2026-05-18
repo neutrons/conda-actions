@@ -91,16 +91,27 @@ runs:
         EXTRA_COMMANDS: ${{ inputs.extra-commands }}
       run: |
         echo "Verifying conda package"
-
         micromamba activate test
-        conda_version=$(micromamba list "${PKG_NAME}" | awk -v pkg="${PKG_NAME}" '$1 == pkg { print $2 }')
 
+        # parse package name from list of conda packages
+        conda_version=$(micromamba list "${PKG_NAME}" | awk -v pkg="${PKG_NAME}" '$1 == pkg { print $2 }')
+        if [ -z "${conda_version}" ]; then
+          echo "Failed to find version of ${PKG_NAME} from conda environment 'test'"
+          exit 1
+        fi
+
+        # get package version from list of conda packages
         if [ -n "${MODULE_NAME}" ]; then
           python_version=$(python -c "import ${MODULE_NAME}; print(${MODULE_NAME}.__version__)" | tail -n 1)
         else
           python_version=$(python -c "import ${PKG_NAME}; print(${PKG_NAME}.__version__)" | tail -n 1)
         fi
+        if [ -z "${python_version}" ]; then
+          echo "Failed to find version of ${PKG_NAME} from python module"
+          exit 1
+        fi
 
+        # print simple version results
         echo "------------------------"
         echo "Conda version: $conda_version"
         echo "Python version: $python_version"
@@ -112,8 +123,8 @@ runs:
           echo "Versions match."
         fi
 
+        # print extra results
         echo "------------------------"
-
         if [ -n "${EXTRA_COMMANDS}" ]; then
           echo "Running additional commands:"
           readarray -t commands <<< "${EXTRA_COMMANDS}"
