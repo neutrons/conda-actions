@@ -4,7 +4,7 @@
 
 This repository contains GitHub actions for various conda-related tasks, such as verifying a conda package, and uploading a conda package to Anaconda Cloud.
 
-These actions primarily assumes that you have built a `<package-name>.conda`,  
+These actions primarily assumes that you have built a `<package-name>.conda`,
 and that it is located in a conda-style channel directory (see [conda-index](https://github.com/conda/conda-index)).
 
 Available actions:

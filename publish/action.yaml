@@ -59,7 +59,8 @@ runs:
               echo "Using 'pixi run anaconda' for upload after installation."
             echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
             else
-              echo "Neither 'anaconda' command nor 'pixi' is available. Please ensure that anaconda-client is installed and available in PATH or via pixi."
+              echo "Neither 'anaconda' command nor 'pixi' is available."
+              echo "Please ensure that anaconda-client is installed and available in PATH or via pixi."
               exit 1
             fi
         fi
@@ -75,7 +76,7 @@ runs:
         DRY_RUN: ${{ inputs.dry-run }}
       run: |
         set -euo pipefail
-        
+
         CMD="${{ steps.get_command.outputs.CMD }}"
         if [ -z "${CMD}" ]; then
           echo "No upload command detected from previous step."
@@ -89,7 +90,9 @@ runs:
             refs/tags/v*rc*)  LABEL="rc" ;;
             refs/tags/v*)     LABEL="main" ;;
             *)
-              echo "Could not determine label from ref '${REF}'. Please provide a label input or use a ref format like 'refs/heads/next' or 'refs/tags/vX.Y.Z[rcN]'."
+              echo "Could not determine label from ref '${REF}'."
+              echo "Please provide a label input or use a ref format like"
+              echo "'refs/heads/next' or 'refs/tags/vX.Y.Z[rcN]'."
               exit 1
               ;;
           esac
@@ -101,7 +104,9 @@ runs:
           force_flag="--force"
         fi
 
-        upload_cmd="${CMD} --token \"${ANACONDA_API_TOKEN}\" upload --user \"${ORGANIZATION}\" --label \"${LABEL}\" ${force_flag} ${{ inputs.package-path }}"
+        upload_cmd="${CMD} --token \"${ANACONDA_API_TOKEN}\" \
+          upload --user \"${ORGANIZATION}\" --label \"${LABEL}\" \
+          ${force_flag} ${{ inputs.package-path }}"
 
         if [ "${DRY_RUN}" = "true" ]; then
           echo "Dry run enabled. Skipping package upload."
