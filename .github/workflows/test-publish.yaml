@@ -9,7 +9,7 @@ name: Test publish action
 
 jobs:
   test-auto-label:
-    name: Test publish with auto-derived label
+    name: with auto-derived label
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,7 +36,7 @@ jobs:
         run: echo "Dry-run publish with derived label completed"
 
   test-explicit-label-force:
-    name: Test publish with explicit label and force
+    name: with explicit label and force
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

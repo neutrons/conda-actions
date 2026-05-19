@@ -12,7 +12,7 @@ env:
 
 jobs:
   test:
-    name: Test pkg-verify action
+    name: pkg-name is module-name
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,7 +33,7 @@ jobs:
             echo "${output}"
 
   test-with-module-name:
-    name: Test pkg-verify action with module name
+    name: module-name
     runs-on: ubuntu-latest
     defaults:
       run:
