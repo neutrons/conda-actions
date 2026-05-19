@@ -64,4 +64,3 @@ jobs:
           package-name: ${{ env.PKG_NAME }}
           module-name: ${{ env.PKG_NAME }}
           conda-env-name: ${{ steps.installer.outputs.conda_env }}
-          extra-channels: neutrons mantid

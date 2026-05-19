@@ -27,6 +27,14 @@ inputs:
         channels: mantid neutrons
     required: false
 
+outputs:
+  conda_env:
+    description: Name of the created conda environment
+    value: ${{ steps.install.outputs.conda_env }}
+  conda_install_dir:
+    description: Filesystem path to the created conda environment
+    value: ${{ steps.install.outputs.conda_install_dir }}
+
 runs:
   using: "composite"
   steps:
@@ -47,6 +55,7 @@ runs:
         micromamba run -n indexer python -m conda_index ${LOCAL_CHANNEL}
 
     - name: Install the package
+      id: install
       shell: bash -el {0}
       env:
         CONDA_ENV_NAME: test
@@ -72,12 +81,18 @@ runs:
           PYTHON_VERSION="python=${PY_VERSION}"
         fi
 
-        # create and activate environment
+        # create environment
         micromamba create -y -n ${CONDA_ENV_NAME} ${channels} ${PYTHON_VERSION} ${PKG_NAME}
+
+        CONDA_INSTALL_DIR=$(micromamba env list | awk -v env="${CONDA_ENV_NAME}" '$1 == env { print $NF }')
+        if [ -z "${CONDA_INSTALL_DIR}" ]; then
+          echo "Failed to determine install directory for environment '${CONDA_ENV_NAME}'"
+          exit 1
+        fi
 
         # for use by other things
         echo "Outputs:"
-        echo "conda_install_dir=${CONDA_PREFIX}"
-        echo "conda_install_dir=${CONDA_PREFIX}" >> $GITHUB_OUTPUT
+        echo "conda_install_dir=${CONDA_INSTALL_DIR}"
+        echo "conda_install_dir=${CONDA_INSTALL_DIR}" >> $GITHUB_OUTPUT
         echo "conda_env=${CONDA_ENV_NAME}"
         echo "conda_env=${CONDA_ENV_NAME}" >> $GITHUB_OUTPUT
