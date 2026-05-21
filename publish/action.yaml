@@ -41,34 +41,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Check for anaconda and pixi commands
-      id: get_command
+    - name: Check for pixi
       shell: bash
       run: |
-        if command -v anaconda &>/dev/null; then
-          echo "'anaconda' command is available. Using it for upload."
-          echo "CMD=anaconda" >> $GITHUB_OUTPUT
-        elif pixi run anaconda --version &>/dev/null; then
-          echo "anaconda command is available via pixi. Using 'pixi run anaconda' for upload."
-          echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
-        else
-            echo "Checking for 'pixi' command..."
-            if command -v pixi &>/dev/null; then
-              echo "'pixi' command is available but 'anaconda' is not found. Installing anaconda-client..."
-              pixi global install anaconda-client
-              echo "Using 'pixi run anaconda' for upload after installation."
-            echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
-            else
-              echo "Neither 'anaconda' command nor 'pixi' is available."
-              echo "Please ensure that anaconda-client is installed and available in PATH or via pixi."
-              exit 1
-            fi
+        if ! command -v pixi &>/dev/null; then
+          echo "pixi is not available. Please ensure pixi is installed and in PATH."
+          exit 1
         fi
+        echo "pixi $(pixi --version) is available."
 
     - name: Upload package to Anaconda Cloud
       shell: bash
       env:
-        ANACONDA_API_TOKEN: ${{ inputs.anaconda-token }}
+        ANACONDA_API_KEY: ${{ inputs.anaconda-token }}
         ORGANIZATION: ${{ inputs.organization }}
         REF: ${{ inputs.github-ref }}
         LABEL: ${{ inputs.label }}
@@ -76,12 +61,6 @@ runs:
         DRY_RUN: ${{ inputs.dry-run }}
       run: |
         set -euo pipefail
-
-        CMD="${{ steps.get_command.outputs.CMD }}"
-        if [ -z "${CMD}" ]; then
-          echo "No upload command detected from previous step."
-          exit 1
-        fi
 
         if [ "${LABEL}" = "" ]; then
           echo "No label input provided. Determining label from GitHub ref '${REF}'..."
@@ -99,22 +78,22 @@ runs:
         fi
         echo "Using label '${LABEL}' for upload."
 
-        force_flag=""
+        upload_args=(
+          "--owner" "${ORGANIZATION}"
+          "--channel" "${LABEL}"
+        )
         if [ "${FORCE}" = "true" ]; then
-          force_flag="--force"
+          upload_args+=("--force")
         fi
-
-        upload_cmd="${CMD} --token \"${ANACONDA_API_TOKEN}\" \
-          upload --user \"${ORGANIZATION}\" --label \"${LABEL}\" \
-          ${force_flag} ${{ inputs.package-path }}"
+        upload_args+=("${{ inputs.package-path }}")
 
         if [ "${DRY_RUN}" = "true" ]; then
           echo "Dry run enabled. Skipping package upload."
-          echo "Would run: ${upload_cmd}"
+          echo "Would run: pixi upload anaconda ${upload_args[*]}"
           exit 0
         fi
 
         echo "Uploading ${{ inputs.package-path }} to ${ORGANIZATION} with label '${LABEL}'"
-        eval "${upload_cmd}"
+        pixi upload anaconda "${upload_args[@]}"
 
         echo "Upload complete."
