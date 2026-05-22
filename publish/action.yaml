@@ -85,7 +85,7 @@ runs:
         if [ "${FORCE}" = "true" ]; then
           upload_args+=("--force")
         fi
-        upload_args+=("${{ inputs.package-path }}")
+        upload_args+=(${{ inputs.package-path }})
 
         if [ "${DRY_RUN}" = "true" ]; then
           echo "Dry run enabled. Skipping package upload."
