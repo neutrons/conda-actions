@@ -53,7 +53,7 @@ runs:
               echo "'pixi' command is available but 'anaconda' is not found. Installing anaconda-client..."
               pixi global install anaconda-client
               echo "Using 'pixi run anaconda' for upload after installation."
-            echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
+              echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
             else
               echo "Neither 'anaconda' command nor 'pixi' is available."
               echo "Please ensure that anaconda-client is installed and available in PATH or via pixi."
