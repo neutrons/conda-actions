@@ -42,17 +42,17 @@ runs:
       shell: bash
       run: |
         if command -v anaconda &>/dev/null; then
-          echo "'anaconda' command is available. Using it for upload."
+          echo "'anaconda' is available. Using it for command."
           echo "CMD=anaconda" >> $GITHUB_OUTPUT
         elif pixi run anaconda --version &>/dev/null; then
-          echo "anaconda command is available via pixi. Using 'pixi run anaconda' for upload."
+          echo "anaconda is available via pixi. Using 'pixi run anaconda' for command."
           echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
         else
             echo "Checking for 'pixi' command..."
             if command -v pixi &>/dev/null; then
               echo "'pixi' command is available but 'anaconda' is not found. Installing anaconda-client..."
               pixi global install anaconda-client
-              echo "Using 'pixi run anaconda' for upload after installation."
+              echo "Using 'pixi run anaconda' for command after installation."
               echo "CMD=pixi run anaconda" >> $GITHUB_OUTPUT
             else
               echo "Neither 'anaconda' command nor 'pixi' is available."
@@ -76,7 +76,7 @@ runs:
 
         CMD="${{ steps.get_command.outputs.CMD }}"
         if [ -z "${CMD}" ]; then
-          echo "No upload command detected from previous step."
+          echo "No output detected from previous step."
           exit 1
         fi
 
