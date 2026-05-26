@@ -2,35 +2,83 @@
 
 ## Overview
 
-This repository contains GitHub actions for various conda-related tasks, such as verifying a conda package, and uploading a conda package to Anaconda Cloud.
+This repository contains GitHub actions for common conda package workflows, including installing a package into a test environment, verifying that it imports correctly, removing old packages from Anaconda Cloud, and publishing packages to Anaconda Cloud.
 
-These actions primarily assumes that you have built a `<package-name>.conda`,
-and that it is located in a conda-style channel directory (see [conda-index](https://github.com/conda/conda-index)).
+Some actions assume you have already built a `.conda` package. When using a local package artifact, place it in a conda-style channel directory (see [conda-index](https://github.com/conda/conda-index)).
 
 Available actions:
 
-- [pkg-verify](#pkg-verify): Verify a conda package by installing it with `micromamba` and ensuring it is importable by Python, and that the version reported by conda and python match.
+- [pkg-install](#pkg-install): Create a micromamba environment and install a conda package into it.
+- [pkg-verify](#pkg-verify): Verify an already-installed conda package by importing it in Python and checking that the conda and Python versions match.
 - [pkg-remove](#pkg-remove): Clean up old conda packages from Anaconda Cloud.
 - [publish](#publish): Publish a conda package to Anaconda Cloud.
 
-## pkg-verify
+## pkg-install
 
-GitHub action to verify a conda package by installing it with `micromamba` and ensuring it is importable by Python, and that the version reported by conda and python match.
+GitHub action to create a micromamba environment, optionally index a local conda channel, and install a conda package.
 
 #### Usage
 
-Full list of available inputs in [`pkg-verify/action.yaml`](#pkg-verify/action.yaml).
+Full list of available inputs in [`pkg-install/action.yml`](pkg-install/action.yml).
 
 Inputs:
 
 | Input            | Description                                                                       | Required | Default |
 | ---------------- | --------------------------------------------------------------------------------- | -------- | ------- |
-| `local-channel`  | Path to the local conda channel containing the package to verify                  | No       | -       |
+| `package-name`   | Name of the conda package to install                                              | Yes      | -       |
+| `local-channel`  | Path to a local conda channel containing the package                              | No       | -       |
+| `python-version` | Python version to install into the test environment (for example `3.10`)          | No       | -       |
+| `extra-channels` | Additional conda channels to use during installation                              | No       | -       |
+
+Outputs:
+
+| Output              | Description                              |
+| ------------------- | ---------------------------------------- |
+| `conda_env`         | Name of the created conda environment    |
+| `conda_install_dir` | Filesystem path of the created env       |
+
+Example:
+
+```yaml
+jobs:
+  pkg-install:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Download conda package artifact
+        uses: actions/download-artifact@main
+        with:
+          name: artifact-conda-package
+          path: /tmp/local-channel/linux-64
+
+      - name: Install Conda Package
+        id: install
+        uses: neutrons/conda-actions/pkg-install@main
+        with:
+          local-channel: /tmp/local-channel
+          package-name: ${{ env.PKG_NAME }}
+          python-version: "3.11"
+          extra-channels: mantid neutrons pyoncat
+```
+
+## pkg-verify
+
+GitHub action to verify a conda package that is already installed in a conda environment. The action imports the package in Python and ensures that the version reported by conda and Python match.
+
+#### Usage
+
+Full list of available inputs in [`pkg-verify/action.yaml`](pkg-verify/action.yaml).
+
+Inputs:
+
+| Input            | Description                                                                       | Required | Default |
+| ---------------- | --------------------------------------------------------------------------------- | -------- | ------- |
 | `package-name`   | Name of the conda package                                                         | Yes      | -       |
 | `module-name`    | Name of the Python module to import (if different from package name)              | No       | -       |
-| `python-version` | Python version to use for testing (e.g., `3.10`)                                  | No       | `3.10`  |
-| `extra-channels` | Additional conda channels to use for dependencies (comma-separated)               | No       | -       |
-| `extra-commands` | Additional shell commands to run after installing the package (newline-separated) | No       | -       |
+| `conda-env-name` | Name of the conda environment where the package is already installed              | Yes      | -       |
+| `extra-commands` | Additional shell commands to run during verification (newline-separated)          | No       | -       |
 
 Example usage in a GitHub workflow:
 
@@ -38,6 +86,7 @@ Example usage in a GitHub workflow:
 jobs:
   # First, build your conda package and upload it as an artifact:
   build:
+    runs-on: ubuntu-latest
     steps:
       - name: Build conda package
         run: |
@@ -49,10 +98,10 @@ jobs:
           name: artifact-conda-package
           path: ${{ env.PKG_NAME }}-*.conda
 
-  # Then, to verify the conda package:
+  # Then install and verify the conda package:
   pkg-verify:
     needs: build
-    run-on: ubuntu-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -el {0}
@@ -63,12 +112,19 @@ jobs:
           name: artifact-conda-package
           path: /tmp/local-channel/linux-64
 
-      - name: Verify Conda Package
-        uses: neutrons/conda-actions/pkg-verify@main
+      - name: Install Conda Package
+        id: install
+        uses: neutrons/conda-actions/pkg-install@main
         with:
           local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
           extra-channels: mantid neutrons pyoncat
+
+      - name: Verify Conda Package
+        uses: neutrons/conda-actions/pkg-verify@main
+        with:
+          package-name: ${{ env.PKG_NAME }}
+          conda-env-name: ${{ steps.install.outputs.conda_env }}
 ```
 
 ## pkg-remove
@@ -78,7 +134,7 @@ keeping the N most recent versions.
 
 #### Usage
 
-Full list of available inputs in [`pkg-remove/action.yaml`](#pkg-remove/action.yaml).
+Full list of available inputs in [`pkg-remove/action.yaml`](pkg-remove/action.yaml).
 
 Inputs:
 
@@ -87,7 +143,7 @@ Inputs:
 | `anaconda_token` | Anaconda.org API token                                                | Yes      | -       |
 | `organization`   | Anaconda.org organization or user name                                | Yes      | -       |
 | `package_name`   | Name of the conda package to clean up                                 | Yes      | -       |
-| `label`          | Label to target for cleanup (e.g., `dev`, `nightly`, `rc`)            | No       | -       |
+| `label`          | Label to target for cleanup (e.g., `dev`, `nightly`, `rc`)            | No       | `dev`   |
 | `keep`           | Number of most recent package versions to keep                        | No       | `5`     |
 | `dry_run`        | If `true`, only print what would be deleted without actually deleting | No       | `false` |
 
@@ -116,23 +172,23 @@ jobs:
 
 ## publish
 
-GitHub action to publish a conda package to Anaconda Cloud.
+GitHub action to publish a pre-built conda package to Anaconda Cloud.
 
 This action assumes that:
 
-- The package has already been built and is available in a local conda channel directory
-- Either `anaconda-client` or `pixi` is installed in the environment where the action is running
+- The package has already been built and is available at the path given by `package-path`
+- Either `anaconda-client` is available in `PATH`, or `pixi` is available so the action can run or install `anaconda-client`
 
-If `label` is not provided, the action will attempt to determine the label from the `github-ref`:
+If `label` is not provided, the action will attempt to determine it from `github-ref`:
 
-- If the ref is tagged `refs/tags/v*`, the package will be published to the `main` label
 - If the ref is tagged `refs/tags/v*rc*`, the package will be published to the `rc` label
+- If the ref is tagged `refs/tags/v*`, the package will be published to the `main` label
 - If the ref is tagged `refs/heads/next`, the package will be published to the `dev` label
 - If the label cannot be determined from the ref, the action will fail
 
 #### Usage
 
-Full list of available inputs in [`publish/action.yaml`](#publish/action.yaml).
+Full list of available inputs in [`publish/action.yaml`](publish/action.yaml).
 
 Inputs:
 
@@ -141,8 +197,8 @@ Inputs:
 | `anaconda-token` | Anaconda.org API token                                       | Yes      | -          |
 | `organization`   | Anaconda.org organization or user name                       | Yes      | -          |
 | `package-path`   | Path to the conda package to publish                         | Yes      | -          |
-| `github-ref`     | GitHub ref (e.g., `refs/tags/v1.0.0`) to determine the label | No       | github.ref |
-| `label`          | Label to apply to the package (e.g., `dev`, `nightly`, `rc`) | No       | -          |
+| `github-ref`     | GitHub ref (for example `refs/tags/v1.0.0`) used when inferring the label | No       | `github.ref` |
+| `label`          | Label to apply to the package (e.g., `main`, `dev`, `nightly`, `rc`) | No       | inferred from `github-ref` |
 | `force`          | If `true`, overwrite existing package with the same version  | No       | `false`    |
 | `dry-run`        | If `true`, print the upload command and skip publishing      | No       | `false`    |
 
@@ -151,19 +207,21 @@ Example:
 ```yaml
 jobs:
   publish:
-    - uses: actions/checkout@main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
 
-    - uses: prefix-dev/setup-pixi@main
+      - uses: prefix-dev/setup-pixi@main
 
-    - name: Build package
-      run: |
-        # steps to build your .conda package, for example:
-        pixi build
+      - name: Build package
+        run: |
+          # steps to build your .conda package, for example:
+          pixi build
 
-    - name: Publish package to Anaconda Cloud
-      uses: neutrons/conda-actions/publish@main
-      with:
-        anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
-        organization: neutrons
-        package-path: my-package-*.conda
+      - name: Publish package to Anaconda Cloud
+        uses: neutrons/conda-actions/publish@main
+        with:
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
+          organization: neutrons
+          package-path: my-package-*.conda
 ```
