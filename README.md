@@ -24,19 +24,19 @@ Full list of available inputs in [`pkg-install/action.yml`](pkg-install/action.y
 
 Inputs:
 
-| Input            | Description                                                                       | Required | Default |
+| Input | Description | Required | Default |
 | ---------------- | --------------------------------------------------------------------------------- | -------- | ------- |
-| `package-name`   | Name of the conda package to install                                              | Yes      | -       |
-| `local-channel`  | Path to a local conda channel containing the package                              | No       | -       |
-| `python-version` | Python version to install into the test environment (for example `3.10`)          | No       | -       |
-| `extra-channels` | Additional conda channels to use during installation                              | No       | -       |
+| `package-name` | Name of the conda package to install | Yes | - |
+| `local-channel` | Path to a local conda channel containing the package | No | - |
+| `python-version` | Python version to install into the test environment (for example `3.10`) | No | - |
+| `extra-channels` | Additional conda channels to use during installation | No | - |
 
 Outputs:
 
-| Output              | Description                              |
+| Output | Description |
 | ------------------- | ---------------------------------------- |
-| `conda_env`         | Name of the created conda environment    |
-| `conda_install_dir` | Filesystem path of the created env       |
+| `conda_env` | Name of the created conda environment |
+| `conda_install_dir` | Filesystem path of the created env |
 
 Example:
 
@@ -74,12 +74,12 @@ Full list of available inputs in [`pkg-verify/action.yaml`](pkg-verify/action.ya
 
 Inputs:
 
-| Input            | Description                                                                       | Required | Default |
+| Input | Description | Required | Default |
 | ---------------- | --------------------------------------------------------------------------------- | -------- | ------- |
-| `package-name`   | Name of the conda package                                                         | Yes      | -       |
-| `module-name`    | Name of the Python module to import (if different from package name)              | No       | -       |
-| `conda-env-name` | Name of the conda environment where the package is already installed              | Yes      | -       |
-| `extra-commands` | Additional shell commands to run during verification (newline-separated)          | No       | -       |
+| `package-name` | Name of the conda package | Yes | - |
+| `module-name` | Name of the Python module to import (if different from package name) | No | - |
+| `conda-env-name` | Name of the conda environment where the package is already installed | Yes | - |
+| `extra-commands` | Additional shell commands to run during verification (newline-separated) | No | - |
 
 Example usage in a GitHub workflow:
 
@@ -139,18 +139,18 @@ Full list of available inputs in [`pkg-remove/action.yaml`](pkg-remove/action.ya
 
 Inputs:
 
-| Input            | Description                                                           | Required | Default |
+| Input | Description | Required | Default |
 | ---------------- | --------------------------------------------------------------------- | -------- | ------- |
-| `anaconda_token` | Anaconda.org API token                                                | Yes      | -       |
-| `organization`   | Anaconda.org organization or user name                                | Yes      | -       |
-| `package_name`   | Name of the conda package to clean up                                 | Yes      | -       |
-| `label`          | Label to target for cleanup (e.g., `dev`, `nightly`, `rc`)            | No       | `dev`   |
-| `keep`           | Number of most recent package versions to keep                        | No       | `5`     |
-| `dry_run`        | If `true`, only print what would be deleted without actually deleting | No       | `false` |
+| `anaconda_token` | Anaconda.org API token | Yes | - |
+| `organization` | Anaconda.org organization or user name | Yes | - |
+| `package_name` | Name of the conda package to clean up | Yes | - |
+| `label` | Label to target for cleanup (e.g., `dev`, `nightly`, `rc`) | No | `dev` |
+| `keep` | Number of most recent package versions to keep | No | `5` |
+| `dry_run` | If `true`, only print what would be deleted without actually deleting | No | `false` |
 
 Outputs:
 
-| Output        |                                       |
+| Output | |
 | ------------- | ------------------------------------- |
 | `num_removed` | Number of files that would be deleted |
 
@@ -181,11 +181,11 @@ Full list of available inputs in [`grype/action.yml`](grype/action.yml).
 
 Inputs:
 
-| Input         | Description                                              | Required | Default |
+| Input | Description | Required | Default |
 | ------------- | -------------------------------------------------------- | -------- | ------- |
-| `path`        | Path to scan (e.g. a conda environment directory)        | Yes      | -       |
-| `fail-build`  | Fail the build if vulnerabilities are found              | No       | `false` |
-| `only-fixed`  | Only report vulnerabilities that have a fix available    | No       | `true`  |
+| `path` | Path to scan (e.g. a conda environment directory) | Yes | - |
+| `fail-build` | Fail the build if vulnerabilities are found | No | `false` |
+| `only-fixed` | Only report vulnerabilities that have a fix available | No | `true` |
 
 Example:
 
@@ -239,15 +239,15 @@ Full list of available inputs in [`publish/action.yaml`](publish/action.yaml).
 
 Inputs:
 
-| Input            | Description                                                  | Required | Default    |
+| Input | Description | Required | Default |
 | ---------------- | ------------------------------------------------------------ | -------- | ---------- |
-| `anaconda-token` | Anaconda.org API token                                       | Yes      | -          |
-| `organization`   | Anaconda.org organization or user name                       | Yes      | -          |
-| `package-path`   | Path to the conda package to publish                         | Yes      | -          |
-| `github-ref`     | GitHub ref (for example `refs/tags/v1.0.0`) used when inferring the label | No       | `github.ref` |
-| `label`          | Label to apply to the package (e.g., `main`, `dev`, `nightly`, `rc`) | No       | inferred from `github-ref` |
-| `force`          | If `true`, overwrite existing package with the same version  | No       | `false`    |
-| `dry-run`        | If `true`, print the upload command and skip publishing      | No       | `false`    |
+| `anaconda-token` | Anaconda.org API token | Yes | - |
+| `organization` | Anaconda.org organization or user name | Yes | - |
+| `package-path` | Path to the conda package to publish | Yes | - |
+| `github-ref` | GitHub ref (for example `refs/tags/v1.0.0`) used when inferring the label | No | `github.ref` |
+| `label` | Label to apply to the package (e.g., `main`, `dev`, `nightly`, `rc`) | No | inferred from `github-ref` |
+| `force` | If `true`, overwrite existing package with the same version | No | `false` |
+| `dry-run` | If `true`, print the upload command and skip publishing | No | `false` |
 
 Example:
 
