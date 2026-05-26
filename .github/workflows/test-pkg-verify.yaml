@@ -21,12 +21,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install conda package
+        id: installer
+        uses: ./pkg-install
+        with:
+          # local-channel: /tmp/local-channel
+          package-name: ${{ env.PKG_NAME }}
+          extra-channels: neutrons mantid
       - name: Verify conda package
         uses: ./pkg-verify
         with:
           # local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
-          extra-channels: neutrons mantid
+          conda-env-name: ${{ steps.installer.outputs.conda_env }}
           extra-commands: |
             echo "This is a test of a multiline"
             output=$(date)
@@ -42,10 +49,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install conda package
+        id: installer
+        uses: ./pkg-install
+        with:
+          # local-channel: /tmp/local-channel
+          package-name: ${{ env.PKG_NAME }}
+          extra-channels: neutrons mantid
+
       - name: Verify conda package
         uses: ./pkg-verify
         with:
           # local-channel: /tmp/local-channel
           package-name: ${{ env.PKG_NAME }}
           module-name: ${{ env.PKG_NAME }}
-          extra-channels: neutrons mantid
+          conda-env-name: ${{ steps.installer.outputs.conda_env }}
