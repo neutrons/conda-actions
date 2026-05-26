@@ -9,7 +9,7 @@
 # action usage and parameters, see https://github.com/anchore/scan-action. For more
 # information on Anchore's container image scanning tool Grype, see
 # https://github.com/anchore/grype
-name: vulnerability scan
+name: Test grype
 
 on:
   push:
