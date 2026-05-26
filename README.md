@@ -12,6 +12,7 @@ Available actions:
 - [pkg-verify](#pkg-verify): Verify an already-installed conda package by importing it in Python and checking that the conda and Python versions match.
 - [pkg-remove](#pkg-remove): Clean up old conda packages from Anaconda Cloud.
 - [publish](#publish): Publish a conda package to Anaconda Cloud.
+- [grype](#grype): Run an Anchore Grype vulnerability scan and upload the SARIF results to GitHub Security.
 
 ## pkg-install
 
@@ -168,6 +169,52 @@ jobs:
           package_name: my-package
           label: dev
           keep: 5
+```
+
+## grype
+
+GitHub action to run an [Anchore Grype](https://github.com/anchore/grype) vulnerability scan on a directory and upload the SARIF results to GitHub Security.
+
+#### Usage
+
+Full list of available inputs in [`grype/action.yml`](grype/action.yml).
+
+Inputs:
+
+| Input         | Description                                              | Required | Default |
+| ------------- | -------------------------------------------------------- | -------- | ------- |
+| `path`        | Path to scan (e.g. a conda environment directory)        | Yes      | -       |
+| `fail-build`  | Fail the build if vulnerabilities are found              | No       | `false` |
+| `only-fixed`  | Only report vulnerabilities that have a fix available    | No       | `true`  |
+
+Example:
+
+```yaml
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+	  # only need grype configuration
+      - uses: actions/checkout@main
+        with:
+          sparse-checkout: |
+            .grype.yaml
+          sparse-checkout-cone-mode: false
+
+      - name: Install Conda Package
+        id: install
+        uses: neutrons/conda-actions/pkg-install@main
+        with:
+          package-name: ${{ env.PKG_NAME }}
+
+      - name: Scan with Grype
+        uses: neutrons/conda-actions/grype@main
+        with:
+          path: ${{ steps.install.outputs.conda_install_dir }}
 ```
 
 ## publish
