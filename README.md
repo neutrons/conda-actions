@@ -30,6 +30,7 @@ Inputs:
 | `local-channel` | Path to a local conda channel containing the package | No | - |
 | `python-version` | Python version to install into the test environment (for example `3.10`) | No | - |
 | `extra-channels` | Additional conda channels to use during installation | No | - |
+| `post-cleanup` | Micromamba cleanup mode passed to `setup-micromamba` | No | `shell-init` |
 
 Outputs:
 
