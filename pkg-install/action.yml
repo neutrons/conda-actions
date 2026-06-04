@@ -26,6 +26,10 @@ inputs:
       Example:
         channels: mantid neutrons
     required: false
+  post-cleanup:
+    description: How to cleanup the micromamba environment. Exposing from setup-micromamba
+    required: false
+    default: "shell-init"
 
 outputs:
   conda_env:
@@ -43,6 +47,7 @@ runs:
       with:
         environment-name: indexer
         init-shell: bash
+        post-cleanup: ${{ inputs.post-cleanup }}
         create-args: >-
           -c conda-forge conda-build conda-index
     - name: Index local conda channel
